@@ -174,7 +174,7 @@ class App
 
     private function print(string $message)
     {
-        print sprintf('[%s] %s', (new \DateTimeImmutable())->format('c'), $message);
+        print sprintf('[%s] %s', (new \DateTimeImmutable())->format('c'), $message). PHP_EOL;
     }
 }
 
