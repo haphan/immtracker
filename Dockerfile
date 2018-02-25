@@ -4,7 +4,8 @@ ENV TIMEZONE "Asia/Singapore"
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV SYMFONY_LOG "php://stderr"
 
-ARG REPO "immtracker"
+ARG REPO="immtracker"
+ARG SHA1="master"
 
 RUN apk add --update \
     tzdata\
@@ -13,16 +14,10 @@ RUN apk add --update \
     curl \
     php7-intl \
     php7-openssl \
-    php7-pdo_mysql \
-    php7-xsl \
-    php7-pspell \
     php7-snmp \
     php7-mbstring \
-    php7-xmlreader \
     php7-opcache \
     php7-posix \
-    php7-session \
-    php7-gd \
     php7-gettext \
     php7-json \
     php7-xml \
@@ -48,7 +43,7 @@ RUN apk add --update \
     # Install: Composer
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && composer --version \
-    && composer global require hirak/prestissimo
+    && composer global require hirak/prestissimo \
     && curl -LSs "https://github.com/haphan/${REPO}/archive/${SHA1}.tar.gz" | tar xz -C / ${REPO}-${SHA1} \
     && rm -rf /srv \
     && mv /${REPO}-${SHA1} /srv \
@@ -58,13 +53,9 @@ RUN apk add --update \
     # Cleanup
     && apk del wget \
     && rm -rf /var/cache/apk/* \
-    && rm -rf /tmp/* \
-
-    # Fix permissions
-    && rm -r /var/www/localhost \
-    && chown -Rf nginx:www-data /var/www/
+    && rm -rf /tmp/*
 
 # Set working directory
 WORKDIR /srv
 
-ENTRYPOINT [ "/srv/" ]
+ENTRYPOINT [ "php", "/srv/app.php" ]

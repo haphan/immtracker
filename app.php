@@ -16,7 +16,7 @@ class App
     const PAGE_HOME = 'https://myimmitracker.com/en/au/trackers/consolidated-visa-tracker-sc189/fullscreen';
     const PAGE_CASES = 'https://myimmitracker.com/au/trackers/consolidated-visa-tracker-sc189/cases';
     const STATE_FILE = 'state.json';
-    const SLEEP = '5';
+    const SLEEP = '3600'; // 1 hour
 
     public function __construct(\GuzzleHttp\Client $client, \Maknz\Slack\Client $slackClient)
     {
@@ -118,7 +118,7 @@ class App
                 sprintf(
                     'Case <%s|%s> now got status `GRANTED`. Application was lodged on `%s`',
                     'https://myimmitracker.com/au/trackers/consolidated-visa-tracker-sc189/cases/'.$grantedCase['username'][1],
-                    $grantedCase['username'][0]."({$grantedCase['username'][1]})",
+                    "{$grantedCase['username'][0]} ({$grantedCase['username'][1]})",
                     $grantedCase[$this->getFieldKey('Lodgement Date')]
                 )
             )->setAllowMarkdown(true);
@@ -155,6 +155,11 @@ class App
 
     private function loadState()
     {
+        if (!file_exists(self::STATE_FILE))
+        {
+            return [];
+        }
+
         try {
             return \GuzzleHttp\json_decode(file_get_contents(self::STATE_FILE), true);
         } catch (\Exception $err) {
