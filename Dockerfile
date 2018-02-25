@@ -4,9 +4,7 @@ ENV TIMEZONE "Asia/Singapore"
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV SYMFONY_LOG "php://stderr"
 
-# Copy configuration files to root
-COPY app.php /srv/
-COPY composer.json /srv/
+ARG REPO "immtracker"
 
 RUN apk add --update \
     tzdata\
@@ -41,32 +39,23 @@ RUN apk add --update \
     php7-soap \
     php7-zlib \
     php7-pdo \
-
-    # Symlink
-    && ln -sf /usr/sbin/php-fpm7 /usr/bin/php-fpm \
     && ln -sf /usr/bin/php7 /usr/bin/php \
 
     # Setting timezone
-    && apk add tzdata \
     && cp /usr/share/zoneinfo/"${TIMEZONE}" /etc/localtime \
     && echo ${TIMEZONE} >  /etc/timezone \
-
-    # Ensure ldap is configure with valid ca cert
-    &&  echo 'TLS_CACERT /etc/ssl/certs/ca-certificates.crt' >> /etc/openldap/ldap.conf \
 
     # Install: Composer
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && composer --version \
     && composer global require hirak/prestissimo
-
-
-    # Install S6
-RUN wget -q https://github.com/just-containers/s6-overlay/releases/download/v${S6VERSION}/s6-overlay-amd64.tar.gz --no-check-certificate -O /tmp/s6-overlay.tar.gz \
-    && tar xfz /tmp/s6-overlay.tar.gz -C / \
-    && rm -f /tmp/s6-overlay.tar.gz \
+    && curl -LSs "https://github.com/haphan/${REPO}/archive/${SHA1}.tar.gz" | tar xz -C / ${REPO}-${SHA1} \
+    && rm -rf /srv \
+    && mv /${REPO}-${SHA1} /srv \
+    && cd /srv \
+    && composer install --no-interaction -vvv \
 
     # Cleanup
-
     && apk del wget \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/* \
