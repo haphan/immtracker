@@ -97,9 +97,10 @@ class App
     private function findGrantedCase(array $cases): ?array
     {
         $field = $this->getFieldKey('Status');
+        $fieldOnsoreOffShore = $this->getFieldKey('Onshore/Offshore');
 
         foreach ($cases as $case) {
-            if ('Granted' == $case[$field]) {
+            if ('Granted' == $case[$field] && 'Onshore' !== $case[$fieldOnsoreOffShore]) {
                 return $case;
             }
         }
